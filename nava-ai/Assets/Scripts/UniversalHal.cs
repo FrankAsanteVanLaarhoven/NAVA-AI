@@ -1,358 +1,196 @@
 using UnityEngine;
-using UnityEngine.UI;
-using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.Geometry;
-using System;
+using System.Collections;
+using TMPro;
 
 /// <summary>
-/// Universal Hardware Abstraction Layer (HAL) - Hardware-agnostic interface.
-/// The Dashboard doesn't care if it's a TurtleBot, Spot, or Drone. It talks to a Universal Interface.
-/// This is how NASA/JPL operates.
+/// Universal Hardware Abstraction Layer - Unified interface between VLA (Simulated) and Real Robot.
+/// Acts as the "Notary" between Unity Dashboard and Jetson hardware.
 /// </summary>
 public class UniversalHal : MonoBehaviour
 {
-    [System.Serializable]
-    public enum HardwareType
-    {
-        NullHardware,   // Simulation mode
-        TurtleBot,      // Differential drive
-        Spot,          // Quadruped
-        Drone,          // Quadrotor
-        Humanoid,       // Bipedal
-        Custom          // User-defined
-    }
-
-    /// <summary>
-    /// Hardware Abstraction Interface
-    /// </summary>
-    public interface IHardwareProfile
-    {
-        void SetMotor(Vector3 velocity);
-        void SetLighting(float intensity);
-        float GetBattery();
-        string GetHardwareName();
-        bool IsHealthy();
-    }
-
-    /// <summary>
-    /// Null Hardware Profile (Simulation Mode)
-    /// </summary>
-    [System.Serializable]
-    public class NullHardwareProfile : IHardwareProfile
-    {
-        private float simulatedBattery = 100f;
-
-        public void SetMotor(Vector3 velocity)
-        {
-            // Simulated - no actual hardware
-        }
-
-        public void SetLighting(float intensity)
-        {
-            // Simulated lighting
-        }
-
-        public float GetBattery()
-        {
-            return simulatedBattery;
-        }
-
-        public string GetHardwareName()
-        {
-            return "Null Hardware (Simulation)";
-        }
-
-        public bool IsHealthy()
-        {
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// TurtleBot Profile (Differential Drive)
-    /// </summary>
-    [System.Serializable]
-    public class TurtleBotProfile : IHardwareProfile
-    {
-        private float battery = 100f;
-        private ROSConnection ros;
-
-        public TurtleBotProfile(ROSConnection rosConnection)
-        {
-            ros = rosConnection;
-        }
-
-        public void SetMotor(Vector3 velocity)
-        {
-            // Convert to differential drive commands
-            // velocity.x = linear, velocity.z = angular
-            TwistMsg cmd = new TwistMsg
-            {
-                linear = new Vector3Msg { x = velocity.x, y = 0, z = 0 },
-                angular = new Vector3Msg { x = 0, y = 0, z = velocity.z }
-            };
-            
-            if (ros != null)
-            {
-                ros.Publish("/cmd_vel", cmd);
-            }
-        }
-
-        public void SetLighting(float intensity)
-        {
-            // TurtleBot doesn't have lighting
-        }
-
-        public float GetBattery()
-        {
-            return battery;
-        }
-
-        public string GetHardwareName()
-        {
-            return "TurtleBot (Differential Drive)";
-        }
-
-        public bool IsHealthy()
-        {
-            return battery > 10f;
-        }
-    }
-
-    /// <summary>
-    /// Drone Profile (Quadrotor)
-    /// </summary>
-    [System.Serializable]
-    public class DroneProfile : IHardwareProfile
-    {
-        private float battery = 100f;
-        private ROSConnection ros;
-
-        public DroneProfile(ROSConnection rosConnection)
-        {
-            ros = rosConnection;
-        }
-
-        public void SetMotor(Vector3 velocity)
-        {
-            // Convert to quadrotor commands (thrust + attitude)
-            // For drones, velocity is 3D (x, y, z)
-            TwistMsg cmd = new TwistMsg
-            {
-                linear = new Vector3Msg { x = velocity.x, y = velocity.y, z = velocity.z },
-                angular = new Vector3Msg { x = 0, y = 0, z = 0 }
-            };
-            
-            if (ros != null)
-            {
-                ros.Publish("/drone/cmd_vel", cmd);
-            }
-        }
-
-        public void SetLighting(float intensity)
-        {
-            // Drone LED control
-            if (ros != null)
-            {
-                // Publish LED command
-            }
-        }
-
-        public float GetBattery()
-        {
-            return battery;
-        }
-
-        public string GetHardwareName()
-        {
-            return "Quadrotor (Aerial)";
-        }
-
-        public bool IsHealthy()
-        {
-            return battery > 15f; // Drones need more battery
-        }
-    }
-
-    [Header("HAL Settings")]
-    [Tooltip("Hardware type (auto-detected or manual)")]
-    public HardwareType hardwareType = HardwareType.NullHardware;
+    [Header("Hardware Bridge Configuration")]
+    public GameObject robotRoot; // The "Real" robot in Simulated World
+    public TextMeshProUGUI statusText;
+    public TextMeshProUGUI hardwareStatus;
     
-    [Tooltip("Enable auto-detection")]
-    public bool autoDetect = true;
+    [Header("Connection Settings")]
+    public string jetsonIP = "192.168.1.50"; // Default Jetson IP
+    public int rosPort = 10000;
+    public float connectionTimeout = 5.0f;
     
-    [Header("UI References")]
-    [Tooltip("Text displaying HAL status")]
-    public Text halStatusText;
+    [Header("Risk Management")]
+    public float riskFactor = 1.0f; // Simulated Hardware Risk
+    public float maxRiskFactor = 2.0f;
     
-    [Tooltip("Text displaying battery level")]
-    public Text batteryText;
-    
-    [Header("Health Monitoring")]
-    [Tooltip("Low battery threshold (%)")]
-    public float lowBatteryThreshold = 10.0f;
-    
-    [Tooltip("Enable low power warning")]
-    public bool enableLowPowerWarning = true;
-    
-    private IHardwareProfile activeProfile;
-    private ROSConnection ros;
-    private float lastBatteryCheck = 0f;
-    private float batteryCheckInterval = 1f;
+    private bool isConnected = false;
+    private bool isSimulated = true; // For testing without hardware
+    private ROS2DashboardManager rosManager;
 
     void Start()
     {
-        ros = ROSConnection.GetOrCreateInstance();
-        
-        // 1. Auto-Detect or Simulate
-        if (autoDetect)
+        // 1. Find ROS Manager
+        rosManager = FindObjectOfType<ROS2DashboardManager>();
+        if (rosManager == null)
         {
-            DetectHardware();
+            Debug.LogWarning("[UNIVERSAL HAL] ROS2DashboardManager not found. Using simulated mode.");
+            isSimulated = true;
+        }
+
+        // 2. Initialize UI
+        if (statusText != null)
+        {
+            statusText.text = "HAL: INITIALIZING...";
+            statusText.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Warning);
+        }
+
+        if (hardwareStatus != null)
+        {
+            hardwareStatus.text = "HARDWARE: DISCONNECTED";
+            hardwareStatus.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Danger);
+        }
+
+        // 3. Connect to Hardware (Simulated or Real)
+        StartCoroutine(ConnectToHardware());
+    }
+
+    IEnumerator ConnectToHardware()
+    {
+        Debug.Log("[UNIVERSAL HAL] Connecting to Hardware...");
+        
+        if (isSimulated)
+        {
+            // Simulated connection (instant)
+            yield return new WaitForSeconds(0.5f);
+            isConnected = true;
+            Debug.Log("[UNIVERSAL HAL] Connected (SIMULATED)");
         }
         else
         {
-            SetHardwareType(hardwareType);
+            // Real hardware connection via ROS
+            float elapsed = 0.0f;
+            while (elapsed < connectionTimeout && !isConnected)
+            {
+                // Attempt connection
+                if (rosManager != null && rosManager.IsConnected())
+                {
+                    isConnected = true;
+                    break;
+                }
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
         }
-        
-        Debug.Log($"[UniversalHAL] Initialized - {activeProfile.GetHardwareName()}");
-    }
 
-    void DetectHardware()
-    {
-        // In Unity Editor, default to Null (Sim)
-        #if UNITY_EDITOR
-        SetHardwareType(HardwareType.NullHardware);
-        return;
-        #endif
-        
-        // In Build (Linux/Windows), try to detect hardware
-        // Check for serial ports, ROS topics, etc.
-        
-        // For now, default to simulation
-        SetHardwareType(HardwareType.NullHardware);
-    }
-
-    void SetHardwareType(HardwareType type)
-    {
-        hardwareType = type;
-        
-        switch (type)
+        // Update UI
+        if (isConnected)
         {
-            case HardwareType.NullHardware:
-                activeProfile = new NullHardwareProfile();
-                break;
-            case HardwareType.TurtleBot:
-                activeProfile = new TurtleBotProfile(ros);
-                break;
-            case HardwareType.Drone:
-                activeProfile = new DroneProfile(ros);
-                break;
-            default:
-                activeProfile = new NullHardwareProfile();
-                break;
+            if (statusText != null)
+            {
+                statusText.text = "HAL: CONNECTED";
+                statusText.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Success);
+            }
+            if (hardwareStatus != null)
+            {
+                hardwareStatus.text = isSimulated ? "HARDWARE: SIMULATED" : $"HARDWARE: {jetsonIP}";
+                hardwareStatus.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Success);
+            }
         }
-        
-        UpdateHALStatus();
+        else
+        {
+            if (statusText != null)
+            {
+                statusText.text = "HAL: CONNECTION FAILED";
+                statusText.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Danger);
+            }
+        }
     }
 
     void Update()
     {
-        // 2. Execute Commands (Unified)
-        // The AI doesn't send "Move Left Wheel". It sends "Move X Axis".
-        Vector3 input = GetInput();
-        if (input != Vector3.zero)
+        if (!isConnected) return;
+
+        // 5. Simulate Telemetry Stream
+        float velocity = Input.GetAxis("Vertical") * 2.0f; // W/S
+        float turn = Input.GetAxis("Horizontal") * 90.0f; // A/D
+
+        if (velocity != 0 || turn != 0)
         {
-            activeProfile.SetMotor(input);
+            // Send Twist (Simulated or Real)
+            SendVelocityCommand(velocity, turn);
         }
-        
-        // 3. Health Check
-        if (Time.time - lastBatteryCheck >= batteryCheckInterval)
+    }
+
+    public void SendVelocityCommand(float linear, float angular)
+    {
+        // Apply risk factor (higher risk = slower movement)
+        float adjustedLinear = linear / riskFactor;
+        float adjustedAngular = angular / riskFactor;
+
+        if (isSimulated)
         {
-            float batt = activeProfile.GetBattery();
-            UpdateBatteryUI(batt);
-            
-            if (batt < lowBatteryThreshold && enableLowPowerWarning)
+            // Simulated command
+            Debug.Log($"[UNIVERSAL HAL] Cmd Vel: Linear={adjustedLinear:F2}, Angular={adjustedAngular:F2} (Risk: {riskFactor:F2})");
+        }
+        else
+        {
+            // Send to ROS (via ROS2DashboardManager)
+            if (rosManager != null)
             {
-                TriggerLowPowerWarning(batt);
+                // In production, this would publish to /nav/cmd_vel topic
+                // rosManager.PublishVelocity(adjustedLinear, adjustedAngular);
             }
-            
-            lastBatteryCheck = Time.time;
         }
+    }
+
+    public void SetRiskFactor(float risk)
+    {
+        riskFactor = Mathf.Clamp(risk, 1.0f, maxRiskFactor);
+        Debug.Log($"[UNIVERSAL HAL] Risk Factor set to: {riskFactor:F2}");
         
-        // Check hardware health
-        if (!activeProfile.IsHealthy())
+        // Update VLA bias if available
+        AdaptiveVlaManager vlaManager = FindObjectOfType<AdaptiveVlaManager>();
+        if (vlaManager != null)
         {
-            Debug.LogWarning("[UniversalHAL] Hardware health check failed");
+            // Higher risk = more conservative (slower)
+            float speedModifier = 1.0f / riskFactor;
+            // vlaManager.SetSpeedModifier(speedModifier);
         }
     }
 
-    Vector3 GetInput()
+    public float GetRiskFactor()
     {
-        // Get input from teleop or AI
-        UnityTeleopController teleop = GetComponent<UnityTeleopController>();
-        if (teleop != null && teleop.teleopEnabled)
+        return riskFactor;
+    }
+
+    public bool IsInSafe()
+    {
+        // Check if robot is in safe state
+        NavlConsciousnessRigor rigor = FindObjectOfType<NavlConsciousnessRigor>();
+        if (rigor != null)
         {
-            return teleop.GetDesiredVelocity();
+            float pScore = rigor.GetTotalScore();
+            return pScore > 50.0f; // Safe if P-score > 50
         }
-        
-        // Get from AI model (would come from UniversalModelManager)
-        return Vector3.zero;
+        return true; // Default to safe if no rigor found
     }
 
-    void UpdateHALStatus()
+    public bool IsConnected()
     {
-        if (halStatusText != null)
+        return isConnected;
+    }
+
+    public void Disconnect()
+    {
+        isConnected = false;
+        if (statusText != null)
         {
-            halStatusText.text = $"HAL: {activeProfile.GetHardwareName()}\n" +
-                                $"Status: {(activeProfile.IsHealthy() ? "HEALTHY" : "WARNING")}";
-            halStatusText.color = activeProfile.IsHealthy() ? Color.green : Color.yellow;
+            statusText.text = "HAL: DISCONNECTED";
+            statusText.color = UIThemeHelper.GetColor(UIThemeHelper.ColorType.Warning);
         }
     }
 
-    void UpdateBatteryUI(float battery)
+    public void Reconnect()
     {
-        if (batteryText != null)
-        {
-            batteryText.text = $"Battery: {battery:F1}%";
-            batteryText.color = battery < lowBatteryThreshold ? Color.red : Color.green;
-        }
-    }
-
-    void TriggerLowPowerWarning(float battery)
-    {
-        Debug.LogWarning($"[UniversalHAL] Low Power Warning: {battery:F1}%");
-        
-        // Visual warning
-        if (halStatusText != null)
-        {
-            halStatusText.color = Color.red;
-        }
-        
-        // Audio warning (if available)
-        // Trigger emergency protocols
-    }
-
-    /// <summary>
-    /// Set hardware type programmatically
-    /// </summary>
-    public void SetHardware(HardwareType type)
-    {
-        SetHardwareType(type);
-    }
-
-    /// <summary>
-    /// Get current hardware profile
-    /// </summary>
-    public IHardwareProfile GetActiveProfile()
-    {
-        return activeProfile;
-    }
-
-    /// <summary>
-    /// Get battery level
-    /// </summary>
-    public float GetBattery()
-    {
-        return activeProfile != null ? activeProfile.GetBattery() : 100f;
+        StartCoroutine(ConnectToHardware());
     }
 }

@@ -73,7 +73,7 @@ public class XRVisualizer : MonoBehaviour
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, devices);
             if (devices.Count > 0)
             {
-                if (devices[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.devicePosition, out Vector3 pos))
+                if (devices[0].TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 pos))
                 {
                     hmdPosition = pos;
                     hasHmdPose = true;
