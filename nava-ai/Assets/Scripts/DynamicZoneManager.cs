@@ -94,7 +94,7 @@ public class DynamicZoneManager : MonoBehaviour
             main.startSpeed = 0.5f;
             main.startSize = 0.1f;
             main.startColor = Color.cyan;
-            main.loop = true;
+            main.loop = true; // Critical for God Mode visualization
             main.playOnAwake = true;
             
             var shape = zoneParticles.shape;
