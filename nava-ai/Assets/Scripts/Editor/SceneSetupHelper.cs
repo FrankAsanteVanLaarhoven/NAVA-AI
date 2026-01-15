@@ -1943,7 +1943,200 @@ public class SceneSetupHelper : EditorWindow
             Debug.Log("[SceneSetup] Added SwarmCertificationOverlay - Fleet certification view ready");
         }
         
-        // 62. Universal Architecture - Model Manager
+        // 63. Dual-Mode Platform - Fleet Discovery Manager (Production)
+        FleetDiscoveryManager fleetDiscovery = rosManager.GetComponent<FleetDiscoveryManager>();
+        if (fleetDiscovery == null)
+        {
+            fleetDiscovery = rosManager.AddComponent<FleetDiscoveryManager>();
+            
+            // Create fleet count UI
+            GameObject fleetCountText = CreateUIText("FleetCount", panelParent, "FLEET: 0/0 ACTIVE");
+            RectTransform fleetCountRect = fleetCountText.GetComponent<RectTransform>();
+            fleetCountRect.anchorMin = new Vector2(0, 0.05f);
+            fleetCountRect.anchorMax = new Vector2(0.5f, 0.1f);
+            fleetCountRect.sizeDelta = Vector2.zero;
+            fleetCountRect.offsetMin = new Vector2(10, 0);
+            fleetCountRect.offsetMax = new Vector2(-10, -5);
+            fleetCountText.GetComponent<Text>().fontSize = 11;
+            SerializedObject fleetSO = new SerializedObject(fleetDiscovery);
+            fleetSO.FindProperty("fleetCountText").objectReferenceValue = fleetCountText.GetComponent<Text>();
+            
+            // Create discovery status
+            GameObject discoveryStatusText = CreateUIText("DiscoveryStatus", panelParent, "DISCOVERY: Initializing...");
+            RectTransform discoveryStatusRect = discoveryStatusText.GetComponent<RectTransform>();
+            discoveryStatusRect.anchorMin = new Vector2(0.5f, 0.05f);
+            discoveryStatusRect.anchorMax = new Vector2(1, 0.1f);
+            discoveryStatusRect.sizeDelta = Vector2.zero;
+            discoveryStatusRect.offsetMin = new Vector2(10, 0);
+            discoveryStatusRect.offsetMax = new Vector2(-10, -5);
+            discoveryStatusText.GetComponent<Text>().fontSize = 11;
+            fleetSO.FindProperty("discoveryStatusText").objectReferenceValue = discoveryStatusText.GetComponent<Text>();
+            fleetSO.ApplyModifiedProperties();
+            
+            Debug.Log("[SceneSetup] Added FleetDiscoveryManager - Production fleet discovery ready");
+        }
+        
+        // 64. Dual-Mode Platform - Mission Profile System (Production)
+        MissionProfileSystem missionProfile = rosManager.GetComponent<MissionProfileSystem>();
+        if (missionProfile == null)
+        {
+            missionProfile = rosManager.AddComponent<MissionProfileSystem>();
+            Debug.Log("[SceneSetup] Added MissionProfileSystem - Production configuration ready");
+        }
+        
+        // 65. Dual-Mode Platform - Security Portal (Production)
+        SecurityPortal securityPortal = rosManager.GetComponent<SecurityPortal>();
+        if (securityPortal == null)
+        {
+            securityPortal = rosManager.AddComponent<SecurityPortal>();
+            
+            // Create lock screen
+            GameObject lockScreen = new GameObject("LockScreen");
+            lockScreen.transform.SetParent(panelParent, false);
+            Image lockBg = lockScreen.AddComponent<Image>();
+            lockBg.color = new Color(0, 0, 0, 0.8f);
+            RectTransform lockRect = lockScreen.GetComponent<RectTransform>();
+            lockRect.anchorMin = Vector2.zero;
+            lockRect.anchorMax = Vector2.one;
+            lockRect.sizeDelta = Vector2.zero;
+            
+            // Create login panel
+            GameObject loginPanel = new GameObject("LoginPanel");
+            loginPanel.transform.SetParent(lockScreen.transform, false);
+            Image loginBg = loginPanel.AddComponent<Image>();
+            loginBg.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+            RectTransform loginRect = loginPanel.GetComponent<RectTransform>();
+            loginRect.anchorMin = new Vector2(0.5f, 0.5f);
+            loginRect.anchorMax = new Vector2(0.5f, 0.5f);
+            loginRect.anchoredPosition = Vector2.zero;
+            loginRect.sizeDelta = new Vector2(400, 200);
+            
+            // Create auth status text
+            GameObject authStatusText = CreateUIText("AuthStatus", loginPanel.transform, "AUTH: Login required");
+            RectTransform authStatusRect = authStatusText.GetComponent<RectTransform>();
+            authStatusRect.anchorMin = new Vector2(0, 0.5f);
+            authStatusRect.anchorMax = new Vector2(1, 1);
+            authStatusRect.sizeDelta = Vector2.zero;
+            authStatusRect.offsetMin = new Vector2(10, 0);
+            authStatusRect.offsetMax = new Vector2(-10, -10);
+            authStatusText.GetComponent<Text>().fontSize = 14;
+            authStatusText.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+            
+            SerializedObject securitySO = new SerializedObject(securityPortal);
+            securitySO.FindProperty("lockScreen").objectReferenceValue = lockScreen;
+            securitySO.FindProperty("loginPanel").objectReferenceValue = loginPanel;
+            securitySO.FindProperty("authStatusText").objectReferenceValue = authStatusText.GetComponent<Text>();
+            securitySO.ApplyModifiedProperties();
+            
+            Undo.RegisterCreatedObjectUndo(lockScreen, "Create LockScreen");
+            
+            Debug.Log("[SceneSetup] Added SecurityPortal - Production authentication ready");
+        }
+        
+        // 66. Dual-Mode Platform - Real-Time Analytics Hub (Production)
+        RealTimeAnalyticsHub analyticsHub = rosManager.GetComponent<RealTimeAnalyticsHub>();
+        if (analyticsHub == null)
+        {
+            analyticsHub = rosManager.AddComponent<RealTimeAnalyticsHub>();
+            
+            // Create metrics text
+            GameObject metricsText = CreateUIText("MetricsText", panelParent, "FLEET METRICS: Initializing...");
+            RectTransform metricsRect = metricsText.GetComponent<RectTransform>();
+            metricsRect.anchorMin = new Vector2(0, 0);
+            metricsRect.anchorMax = new Vector2(0.5f, 0.05f);
+            metricsRect.sizeDelta = Vector2.zero;
+            metricsRect.offsetMin = new Vector2(10, 0);
+            metricsRect.offsetMax = new Vector2(-10, -5);
+            metricsText.GetComponent<Text>().fontSize = 10;
+            SerializedObject analyticsSO = new SerializedObject(analyticsHub);
+            analyticsSO.FindProperty("metricsText").objectReferenceValue = metricsText.GetComponent<Text>();
+            analyticsSO.ApplyModifiedProperties();
+            
+            Debug.Log("[SceneSetup] Added RealTimeAnalyticsHub - Production analytics ready");
+        }
+        
+        // 67. Dual-Mode Platform - Video Streamer (Production)
+        VideoStreamer videoStreamer = rosManager.GetComponent<VideoStreamer>();
+        if (videoStreamer == null)
+        {
+            videoStreamer = rosManager.AddComponent<VideoStreamer>();
+            Debug.Log("[SceneSetup] Added VideoStreamer - Production telepresence ready");
+        }
+        
+        // 68. Dual-Mode Platform - Academic Session Recorder (Academia)
+        AcademicSessionRecorder sessionRecorder = rosManager.GetComponent<AcademicSessionRecorder>();
+        if (sessionRecorder == null)
+        {
+            sessionRecorder = rosManager.AddComponent<AcademicSessionRecorder>();
+            Debug.Log("[SceneSetup] Added AcademicSessionRecorder - Academia session logging ready");
+        }
+        
+        // 69. Dual-Mode Platform - Lecture Annotation Tool (Academia)
+        LectureAnnotationTool annotationTool = rosManager.GetComponent<LectureAnnotationTool>();
+        if (annotationTool == null)
+        {
+            annotationTool = rosManager.AddComponent<LectureAnnotationTool>();
+            Debug.Log("[SceneSetup] Added LectureAnnotationTool - Academia annotation ready");
+        }
+        
+        // 70. Dual-Mode Platform - Experiment Workflow Controller (Academia)
+        ExperimentWorkflowController workflowController = rosManager.GetComponent<ExperimentWorkflowController>();
+        if (workflowController == null)
+        {
+            workflowController = rosManager.AddComponent<ExperimentWorkflowController>();
+            
+            // Create experiment status text
+            GameObject experimentStatusText = CreateUIText("ExperimentStatus", panelParent, "EXPERIMENT: STOPPED");
+            RectTransform experimentStatusRect = experimentStatusText.GetComponent<RectTransform>();
+            experimentStatusRect.anchorMin = new Vector2(0.5f, 0);
+            experimentStatusRect.anchorMax = new Vector2(1, 0.05f);
+            experimentStatusRect.sizeDelta = Vector2.zero;
+            experimentStatusRect.offsetMin = new Vector2(10, 0);
+            experimentStatusRect.offsetMax = new Vector2(-10, -5);
+            experimentStatusText.GetComponent<Text>().fontSize = 10;
+            SerializedObject workflowSO = new SerializedObject(workflowController);
+            workflowSO.FindProperty("experimentStatusText").objectReferenceValue = experimentStatusText.GetComponent<Text>();
+            workflowSO.FindProperty("sessionRecorder").objectReferenceValue = sessionRecorder;
+            workflowSO.ApplyModifiedProperties();
+            
+            Debug.Log("[SceneSetup] Added ExperimentWorkflowController - Academia workflow ready");
+        }
+        
+        // 71. Dual-Mode Platform - Dual Mode Manager (Master Controller)
+        DualModeManager dualMode = rosManager.GetComponent<DualModeManager>();
+        if (dualMode == null)
+        {
+            dualMode = rosManager.AddComponent<DualModeManager>();
+            
+            // Create mode status text
+            GameObject modeStatusText = CreateUIText("ModeStatus", panelParent, "MODE: ACADEMIA");
+            RectTransform modeStatusRect = modeStatusText.GetComponent<RectTransform>();
+            modeStatusRect.anchorMin = new Vector2(0.5f, 0.95f);
+            modeStatusRect.anchorMax = new Vector2(0.5f, 0.95f);
+            modeStatusRect.anchoredPosition = Vector2.zero;
+            modeStatusRect.sizeDelta = new Vector2(200, 30);
+            modeStatusText.GetComponent<Text>().fontSize = 14;
+            modeStatusText.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+            modeStatusText.GetComponent<Text>().fontStyle = FontStyle.Bold;
+            modeStatusText.GetComponent<Text>().color = Color.cyan;
+            
+            SerializedObject dualModeSO = new SerializedObject(dualMode);
+            dualModeSO.FindProperty("modeStatusText").objectReferenceValue = modeStatusText.GetComponent<Text>();
+            dualModeSO.FindProperty("academiaComponents").arraySize = 3;
+            dualModeSO.FindProperty("academiaComponents").GetArrayElementAtIndex(0).objectReferenceValue = sessionRecorder;
+            dualModeSO.FindProperty("academiaComponents").GetArrayElementAtIndex(1).objectReferenceValue = annotationTool;
+            dualModeSO.FindProperty("academiaComponents").GetArrayElementAtIndex(2).objectReferenceValue = workflowController;
+            dualModeSO.FindProperty("productionComponents").arraySize = 4;
+            dualModeSO.FindProperty("productionComponents").GetArrayElementAtIndex(0).objectReferenceValue = fleetDiscovery;
+            dualModeSO.FindProperty("productionComponents").GetArrayElementAtIndex(1).objectReferenceValue = securityPortal;
+            dualModeSO.FindProperty("productionComponents").GetArrayElementAtIndex(2).objectReferenceValue = analyticsHub;
+            dualModeSO.FindProperty("productionComponents").GetArrayElementAtIndex(3).objectReferenceValue = videoStreamer;
+            dualModeSO.ApplyModifiedProperties();
+            
+            Debug.Log("[SceneSetup] Added DualModeManager - Dual-mode platform ready");
+        }
+        
+        // 72. Universal Architecture - Model Manager
         UniversalModelManager modelManager = rosManager.GetComponent<UniversalModelManager>();
         if (modelManager == null)
         {

@@ -222,6 +222,30 @@ public class NavlProjectVerifier : MonoBehaviour
         result.componentStatus["Camera"] = hasCamera;
         result.componentStatus["Map Viz"] = hasMapViz;
         
+        // 8. Verify Dual-Mode Platform (Production)
+        bool hasFleetDiscovery = VerifyComponent<FleetDiscoveryManager>(rosManager, "Fleet Discovery Manager");
+        bool hasMissionProfile = VerifyComponent<MissionProfileSystem>(rosManager, "Mission Profile System");
+        bool hasSecurityPortal = VerifyComponent<SecurityPortal>(rosManager, "Security Portal");
+        bool hasAnalyticsHub = VerifyComponent<RealTimeAnalyticsHub>(rosManager, "Real-Time Analytics Hub");
+        bool hasVideoStreamer = VerifyComponent<VideoStreamer>(rosManager, "Video Streamer");
+        
+        result.componentStatus["Fleet Discovery"] = hasFleetDiscovery;
+        result.componentStatus["Mission Profile"] = hasMissionProfile;
+        result.componentStatus["Security Portal"] = hasSecurityPortal;
+        result.componentStatus["Analytics Hub"] = hasAnalyticsHub;
+        result.componentStatus["Video Streamer"] = hasVideoStreamer;
+        
+        // 9. Verify Dual-Mode Platform (Academia)
+        bool hasSessionRecorder = VerifyComponent<AcademicSessionRecorder>(rosManager, "Academic Session Recorder");
+        bool hasAnnotationTool = VerifyComponent<LectureAnnotationTool>(rosManager, "Lecture Annotation Tool");
+        bool hasWorkflowController = VerifyComponent<ExperimentWorkflowController>(rosManager, "Experiment Workflow Controller");
+        bool hasDualMode = VerifyComponent<DualModeManager>(rosManager, "Dual Mode Manager");
+        
+        result.componentStatus["Session Recorder"] = hasSessionRecorder;
+        result.componentStatus["Annotation Tool"] = hasAnnotationTool;
+        result.componentStatus["Workflow Controller"] = hasWorkflowController;
+        result.componentStatus["Dual Mode Manager"] = hasDualMode;
+        
         // --- THE VERIFICATION LOGIC ---
         result.allClear = true;
         result.missing.Clear();
