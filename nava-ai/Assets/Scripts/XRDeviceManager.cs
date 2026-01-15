@@ -60,12 +60,12 @@ public class XRDeviceManager : MonoBehaviour
         if (XRSettings.enabled)
         {
             // Try to get actual XR device pose
-            List<InputDevice> devices = new List<InputDevice>();
+            List<UnityEngine.XR.InputDevice> devices = new List<UnityEngine.XR.InputDevice>();
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, devices);
             if (devices.Count > 0)
             {
-                if (devices[0].TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 pos) &&
-                    devices[0].TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rot))
+                if (devices[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.devicePosition, out Vector3 pos) &&
+                    devices[0].TryGetFeatureValue(UnityEngine.XR.CommonUsages.deviceRotation, out Quaternion rot))
                 {
                     hmdPosition = pos;
                     hmdRotation = rot;
