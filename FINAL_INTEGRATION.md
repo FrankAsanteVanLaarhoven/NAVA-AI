@@ -91,14 +91,14 @@ Present: X | Missing: Y
 3. Drag `RealRobot`, `SwarmController`, and `ComplianceAuditor` into slots
    - **Result**: System verifies all components on startup
 
-### Step 4: Final Polish (The "Leeds Lab" Touch)
+### Step 4: Final Polish (The "NAVA-AI Lab" Touch)
 1. Ensure `SceneSetupHelper.cs` is in `Scripts/Editor/`
 2. Run `NAVA Dashboard > Setup ROS2 Scene`
    - **Result**: Auto-generates UI Canvas, Camera Settings, and wiring
 3. Add **God Mode UI** (7 Sliders for x, y, z, v, θ, σ) to Canvas
    - **Result**: Manual math tuning while robot runs
 
-## Final Test Sequence (Go to Leeds)
+## Final Test Sequence (Production Deployment)
 
 When you walk into the lab with this build, execute this sequence to prove **SOTA Status**:
 
@@ -198,7 +198,7 @@ You have successfully built a **PhD-Level, Patent-Ready Testbed**.
 The NAVΛ Project Verifier ensures:
 - ✅ All components present and connected
 - ✅ System integrity verified
-- ✅ Ready for Leeds Robotics Lab
+- ✅ Ready for Production Deployment
 - ✅ Ready for Tesla/Waymo Level benchmarking
 - ✅ ISO 26262 compliant
 - ✅ Patent-ready architecture

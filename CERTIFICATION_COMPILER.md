@@ -166,7 +166,7 @@ public class CertificateStats
 - **Uncertainty**: Sigma value quantifies confidence
 - **Audit Trail**: Complete timestamped history
 
-### Leeds Robotics Lab Ready
+### Research Lab Ready
 - **Academic Rigor**: Mathematical proofs embedded in logs
 - **Reproducibility**: All parameters logged
 - **Transparency**: Open JSON/CSV format

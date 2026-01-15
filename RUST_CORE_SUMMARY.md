@@ -144,7 +144,7 @@ Check `Assets/Data/cert_chain.csv` for:
 - ✅ **Memory Safety**: Rust's ownership system
 - ✅ **Production Ready**: Tested and verified
 - ✅ **ISO 26262 Ready**: Deterministic execution, WCET guarantees
-- ✅ **Leeds Robotics Ready**: Academic-grade implementation
+- ✅ **Research-Ready**: Academic-grade implementation
 
 ## Summary
 
