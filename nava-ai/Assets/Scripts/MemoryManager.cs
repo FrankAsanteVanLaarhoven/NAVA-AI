@@ -97,6 +97,25 @@ public class MemoryManager : MonoBehaviour
         long currentAlloc = GC.GetTotalMemory(false);
         float usedMB = currentAlloc / (1024.0f * 1024.0f);
 
+        // 4GB RAM Fix: Check for VRAM crash condition (Jetson Orin with 4GB VRAM)
+        long graphicsMemoryMB = SystemInfo.graphicsMemorySize;
+        if (graphicsMemoryMB > 4000) // Exceeds 4GB VRAM limit
+        {
+            Debug.LogError($"[MEMORY] CRASH! VRAM exceeds 4GB ({graphicsMemoryMB} MB). Forcing emergency unload...");
+            ForceGC();
+            
+            // Unload unused assets via Addressables if available
+            #if UNITY_ADDRESSABLES
+            UnityEngine.AddressableAssets.Addressables.ReleaseAll();
+            #endif
+            
+            // Reset to empty scene if available
+            if (Application.isPlaying)
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("Scenes/Empty");
+            }
+        }
+
         if (usedMB > unloadThresholdMB)
         {
             Debug.LogWarning($"[MemoryManager] Usage ({usedMB:F2} MB) exceeds threshold ({unloadThresholdMB:F0} MB). Unloading unused assets...");
