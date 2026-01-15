@@ -1,0 +1,41 @@
+#pragma kernel VoxelCarve
+
+// Voxel grid texture (3D)
+RWTexture3D<float4> VoxelGrid;
+
+// Point cloud data
+StructuredBuffer<float3> PointCloud;
+
+// Parameters
+int PointCount;
+float VoxelSize;
+float3 WorldBounds;
+int Resolution;
+
+[numthreads(64,1,1)]
+void VoxelCarve (uint3 id : SV_DispatchThreadID)
+{
+    uint i = id.x;
+    if (i >= PointCount) return;
+    
+    // Get point from buffer
+    float3 worldPos = PointCloud[i];
+    
+    // Convert world position to voxel index
+    // Offset by half world bounds to center grid
+    float3 localPos = worldPos + WorldBounds * 0.5;
+    int3 voxelIdx = int3(
+        floor(localPos.x / VoxelSize),
+        floor(localPos.y / VoxelSize),
+        floor(localPos.z / VoxelSize)
+    );
+    
+    // Check bounds
+    if (voxelIdx.x >= 0 && voxelIdx.x < Resolution &&
+        voxelIdx.y >= 0 && voxelIdx.y < Resolution &&
+        voxelIdx.z >= 0 && voxelIdx.z < Resolution)
+    {
+        // Mark voxel as occupied (white)
+        VoxelGrid[voxelIdx] = float4(1.0, 1.0, 1.0, 1.0);
+    }
+}

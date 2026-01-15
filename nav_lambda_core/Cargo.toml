@@ -1,0 +1,22 @@
+[package]
+name = "nav_lambda_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "nav_lambda_core"
+crate-type = ["cdylib", "rlib"]  # cdylib for dynamic library, rlib for Rust integration
+
+[dependencies]
+# No external dependencies for minimal FFI
+# serde and serde_json can be added if JSON serialization is needed
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"  # Smaller binary, but no panic unwinding
+
+[profile.dev]
+opt-level = 0
+debug = true
