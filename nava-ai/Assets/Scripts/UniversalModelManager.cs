@@ -82,12 +82,13 @@ public class UniversalModelManager : MonoBehaviour
         // Default configurations
         if (availableModels.Count == 0)
         {
-            availableModels.Add(new ModelConfig { type = ModelType.VLA, displayName = "VLA", requiresAttentionMesh = true, modelColor = Color.blue });
-            availableModels.Add(new ModelConfig { type = ModelType.SafeVLA, displayName = "SafeVLA", requiresAttentionMesh = true, modelColor = Color.cyan });
-            availableModels.Add(new ModelConfig { type = ModelType.VLM, displayName = "VLM", requiresReasoningHUD = true, modelColor = Color.green });
-            availableModels.Add(new ModelConfig { type = ModelType.AGI, displayName = "AGI", requiresReasoningHUD = true, modelColor = Color.magenta });
-            availableModels.Add(new ModelConfig { type = ModelType.RL, displayName = "RL", requiresQValues = true, modelColor = Color.yellow });
-            availableModels.Add(new ModelConfig { type = ModelType.Quadrotor, displayName = "Quadrotor", modelColor = Color.red });
+            // Palantir/Tesla color scheme - Professional NASA theme
+            availableModels.Add(new ModelConfig { type = ModelType.VLA, displayName = "VLA", requiresAttentionMesh = true, modelColor = new Color(0f, 0.478f, 1f, 1f) }); // Apple Blue
+            availableModels.Add(new ModelConfig { type = ModelType.SafeVLA, displayName = "SafeVLA", requiresAttentionMesh = true, modelColor = new Color(0.2f, 0.6f, 1f, 1f) }); // Palantir Blue
+            availableModels.Add(new ModelConfig { type = ModelType.VLM, displayName = "VLM", requiresReasoningHUD = true, modelColor = new Color(0f, 0.8f, 0.4f, 1f) }); // Tesla Green
+            availableModels.Add(new ModelConfig { type = ModelType.AGI, displayName = "AGI", requiresReasoningHUD = true, modelColor = new Color(0f, 0.478f, 1f, 1f) }); // Apple Blue (replaced magenta)
+            availableModels.Add(new ModelConfig { type = ModelType.RL, displayName = "RL", requiresQValues = true, modelColor = new Color(1f, 0.6f, 0f, 1f) }); // Tesla Orange
+            availableModels.Add(new ModelConfig { type = ModelType.Quadrotor, displayName = "Quadrotor", modelColor = new Color(1f, 0.2f, 0.2f, 1f) }); // Error Red
             availableModels.Add(new ModelConfig { type = ModelType.Humanoid, displayName = "Humanoid", modelColor = Color.white });
         }
         

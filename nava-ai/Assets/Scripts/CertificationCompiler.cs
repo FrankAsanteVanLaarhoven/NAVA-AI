@@ -149,7 +149,7 @@ public class CertificationCompiler : MonoBehaviour
                 if (compileStatusText != null)
                 {
                     compileStatusText.text = "COMPILER: RUST CORE LOCKED & READY";
-                    compileStatusText.color = Color.cyan;
+                    compileStatusText.color = UIThemeHelper.Colors.PalantirBlue; // Replaced cyan
                 }
                 Debug.Log("[RustCore] Core Integrity: VERIFIED");
             }
@@ -492,7 +492,7 @@ public class CertificationCompiler : MonoBehaviour
             if (compileStatusText != null)
             {
                 compileStatusText.text = $"COMPILING: SAFE (P={result.p_score:F1}) [RUST]";
-                compileStatusText.color = Color.cyan;
+                compileStatusText.color = UIThemeHelper.Colors.PalantirBlue; // Replaced cyan
             }
         }
         else
@@ -543,7 +543,7 @@ public class CertificationCompiler : MonoBehaviour
         if (compileStatusText != null)
         {
             compileStatusText.text = "CRITICAL: RUST CORE CRASHED";
-            compileStatusText.color = Color.magenta;
+                compileStatusText.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
         }
         
         Debug.LogError("[RustCore] Robustness check failed. Rust core may have crashed.");
@@ -594,7 +594,7 @@ public class CertificationCompiler : MonoBehaviour
             if (verified)
             {
                 compileStatusText.text = $"COMPILING: SAFE (P={pScore:F1})";
-                compileStatusText.color = Color.cyan;
+                compileStatusText.color = UIThemeHelper.Colors.PalantirBlue; // Replaced cyan
             }
             else
             {

@@ -60,15 +60,16 @@ public class SynapticFireVisualizer : MonoBehaviour
 
     void InitializeDefaultColors()
     {
+        // Palantir/Tesla color scheme - Professional NASA theme
         modelColors = new ModelColorMapping[]
         {
-            new ModelColorMapping { modelName = "SafeVLA", color = Color.blue },
-            new ModelColorMapping { modelName = "VLA", color = Color.cyan },
-            new ModelColorMapping { modelName = "VLM", color = Color.green },
-            new ModelColorMapping { modelName = "AGI", color = Color.magenta },
-            new ModelColorMapping { modelName = "RL", color = Color.yellow },
-            new ModelColorMapping { modelName = "Quadrotor", color = Color.red },
-            new ModelColorMapping { modelName = "Humanoid", color = Color.white }
+            new ModelColorMapping { modelName = "SafeVLA", color = new Color(0.2f, 0.6f, 1f, 1f) }, // Palantir Blue
+            new ModelColorMapping { modelName = "VLA", color = new Color(0f, 0.478f, 1f, 1f) }, // Apple Blue
+            new ModelColorMapping { modelName = "VLM", color = new Color(0f, 0.8f, 0.4f, 1f) }, // Tesla Green
+            new ModelColorMapping { modelName = "AGI", color = new Color(0f, 0.478f, 1f, 1f) }, // Apple Blue (replaced magenta)
+            new ModelColorMapping { modelName = "RL", color = new Color(1f, 0.6f, 0f, 1f) }, // Tesla Orange
+            new ModelColorMapping { modelName = "Quadrotor", color = new Color(1f, 0.2f, 0.2f, 1f) }, // Error Red
+            new ModelColorMapping { modelName = "Humanoid", color = new Color(1f, 1f, 1f, 1f) } // Crispy White
         };
     }
 

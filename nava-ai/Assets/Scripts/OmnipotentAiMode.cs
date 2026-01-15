@@ -169,7 +169,7 @@ public class OmnipotentAiMode : MonoBehaviour
             if (statusText != null)
             {
                 statusText.text = "AI MODE: OMNIPOTENT ⚠️";
-                statusText.color = Color.magenta;
+                statusText.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
             }
             
             if (coreWarningLight != null)
@@ -206,7 +206,7 @@ public class OmnipotentAiMode : MonoBehaviour
             if (statusText != null)
             {
                 statusText.text = "AI MODE: RESTRICTED";
-                statusText.color = Color.cyan;
+                statusText.color = UIThemeHelper.Colors.PalantirBlue; // Replaced cyan
             }
             
             if (coreWarningLight != null)

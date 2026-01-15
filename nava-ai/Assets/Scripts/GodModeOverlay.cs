@@ -94,7 +94,7 @@ public class GodModeOverlay : MonoBehaviour
             safeCone.startWidth = 0.2f;
             safeCone.endWidth = 0.05f;
             safeCone.material = new Material(Shader.Find("Sprites/Default"));
-            safeCone.color = Color.magenta;
+            safeCone.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
             safeCone.useWorldSpace = true;
         }
     }
@@ -188,12 +188,12 @@ public class GodModeOverlay : MonoBehaviour
             safeCone.positionCount = 2;
             safeCone.SetPosition(0, robotPos);
             safeCone.SetPosition(1, robotPos + forward * safeLength);
-            safeCone.color = verifier.IsCertifiedSafe() ? Color.magenta : Color.red;
+            safeCone.color = verifier.IsCertifiedSafe() ? UIThemeHelper.Colors.AppleBlue : UIThemeHelper.Colors.Error; // Replaced magenta
         }
         
         // Debug rays
         Debug.DrawRay(robotPos, velocity * 2.0f, Color.blue);
-        Debug.DrawRay(robotPos, transform.forward * 5.0f, Color.magenta);
+        Debug.DrawRay(robotPos, transform.forward * 5.0f, UIThemeHelper.Colors.AppleBlue); // Replaced magenta
     }
 
     void UpdateSummary(Vector3 pos, Vector3 vel, float heading, float cert)

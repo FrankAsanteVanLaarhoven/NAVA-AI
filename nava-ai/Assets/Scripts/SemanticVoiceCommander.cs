@@ -402,9 +402,9 @@ public class SemanticVoiceCommander : MonoBehaviour
             case SemanticAction.Avoid:
                 return Color.yellow;
             case SemanticAction.Explain:
-                return Color.cyan;
+                return UIThemeHelper.Colors.PalantirBlue; // Replaced cyan
             case SemanticAction.Toggle:
-                return Color.magenta;
+                return UIThemeHelper.Colors.AppleBlue; // Replaced magenta
             default:
                 return Color.white;
         }

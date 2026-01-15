@@ -90,7 +90,7 @@ public class ROS2DashboardManager : MonoBehaviour
         if(shadowModeActive) 
         {
             statusText.text = "SHADOW MODE: ACTIVE";
-            connectionIndicator.color = Color.magenta;
+            connectionIndicator.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
         }
         else 
         {
