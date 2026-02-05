@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  nava-web:
+    build:
+      context: ./web-ui
+      dockerfile: Dockerfile
+    container_name: nava-web
+    restart: always
+    expose:
+      - "80"
+    networks:
+      - public-proxy
+
+  nava-server:
+    build:
+      context: ./nav_lambda_server
+      dockerfile: Dockerfile
+    container_name: nava-server
+    restart: always
+    expose:
+      - "8080" # Assuming 8080 based on standard Rust web frameworks, will verify source
+    networks:
+      - public-proxy
+
+networks:
+  public-proxy:
+    external: true

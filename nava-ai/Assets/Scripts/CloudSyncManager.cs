@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Std;
 using System.Collections;

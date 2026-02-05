@@ -30,7 +30,7 @@ public class SceneSetupHelper : EditorWindow
             "• Wireframe material for ShadowRobot", MessageType.Info);
     }
 
-    static void SetupCompleteScene()
+    public static void SetupCompleteScene()
     {
         Undo.SetCurrentGroupName("Setup ROS2 Scene");
         int group = Undo.GetCurrentGroup();

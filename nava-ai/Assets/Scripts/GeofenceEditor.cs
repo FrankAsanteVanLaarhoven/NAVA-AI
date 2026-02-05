@@ -2,6 +2,9 @@ using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 /// <summary>
 /// Visual editor for creating geofencing zones (no-go areas).
@@ -173,8 +176,6 @@ public class GeofenceEditor : MonoBehaviour
 }
 
 #if UNITY_EDITOR
-using UnityEditor;
-
 [CustomEditor(typeof(GeofenceEditor))]
 public class GeofenceEditorInspector : Editor
 {

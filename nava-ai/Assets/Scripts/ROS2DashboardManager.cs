@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
@@ -44,24 +45,42 @@ public class ROS2DashboardManager : MonoBehaviour
 
     void Start()
     {
+        // Validate required references
+        if (realRobot == null)
+        {
+            Debug.LogError("[ROS2DashboardManager] RealRobot GameObject is not assigned! Please assign it in the Inspector.");
+            enabled = false;
+            return;
+        }
+
         // 1. Setup ROS Connection
-        ros = ROSConnection.GetOrCreateInstance();
-        ros.Configure(rosIP, rosPort);
+        try
+        {
+            ros = ROSConnection.GetOrCreateInstance();
+            ros.Configure(rosIP, rosPort);
 
-        // 2. Subscribe to Topics (Listening to ROS)
-        // Use robotID to create unique topics for fleet management
-        string topicPrefix = robotID > 0 ? $"agent_{robotID}/" : "";
-        ros.Subscribe<TwistMsg>($"{topicPrefix}nav/cmd_vel", UpdateRobotMotion);
-        ros.Subscribe<Float32Msg>($"{topicPrefix}nav/margin", UpdateMarginUI);
-        ros.Subscribe<BoolMsg>($"{topicPrefix}nav/shadow_toggle", UpdateShadowVisuals);
+            // 2. Subscribe to Topics (Listening to ROS)
+            // Use robotID to create unique topics for fleet management
+            string topicPrefix = robotID > 0 ? $"agent_{robotID}/" : "";
+            ros.Subscribe<TwistMsg>($"{topicPrefix}nav/cmd_vel", UpdateRobotMotion);
+            ros.Subscribe<Float32Msg>($"{topicPrefix}nav/margin", UpdateMarginUI);
+            ros.Subscribe<BoolMsg>($"{topicPrefix}nav/shadow_toggle", UpdateShadowVisuals);
 
-        Debug.Log($"[Unity] Attempting to connect to ROS at {rosIP}:{rosPort}");
+            Debug.Log($"[Unity] Attempting to connect to ROS at {rosIP}:{rosPort}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ROS2DashboardManager] Failed to initialize ROS connection: {e.Message}");
+            enabled = false;
+        }
     }
 
     // --- Callbacks from ROS ---
 
     void UpdateRobotMotion(TwistMsg msg)
     {
+        if (realRobot == null) return;
+        
         // Move the "Real" robot based on ROS Twist message
         // Note: Simple local translation. In real sim, use Physics or Odometry
         Vector3 move = new Vector3((float)msg.linear.x, 0, (float)msg.linear.z); 
@@ -71,39 +90,76 @@ public class ROS2DashboardManager : MonoBehaviour
         float turn = (float)msg.angular.y * Time.deltaTime;
         realRobot.transform.Rotate(0, turn * Mathf.Rad2Deg, 0);
 
-        velocityText.text = $"Speed: {msg.linear.x:F2} m/s";
+        if (velocityText != null)
+        {
+            velocityText.text = $"Speed: {msg.linear.x:F2} m/s";
+        }
     }
 
     void UpdateMarginUI(Float32Msg msg)
     {
         currentMargin = msg.data; // Store for fleet manager
-        marginText.text = $"Safety Margin: {msg.data:F2} m";
-        if (msg.data < 0.5f) marginText.color = Color.red;
-        else marginText.color = Color.green;
+        
+        if (marginText != null)
+        {
+            marginText.text = $"Safety Margin: {msg.data:F2} m";
+            if (msg.data < 0.5f) marginText.color = Color.red;
+            else marginText.color = Color.green;
+        }
     }
 
     void UpdateShadowVisuals(BoolMsg msg)
     {
         shadowModeActive = msg.data;
-        shadowRobot.SetActive(shadowModeActive);
         
-        if(shadowModeActive) 
+        if (shadowRobot != null)
         {
-            statusText.text = "SHADOW MODE: ACTIVE";
-            connectionIndicator.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
+            shadowRobot.SetActive(shadowModeActive);
         }
-        else 
+        
+        if (statusText != null)
         {
-            statusText.text = "MODE: STANDARD";
-            connectionIndicator.color = Color.green;
+            if(shadowModeActive) 
+            {
+                statusText.text = "SHADOW MODE: ACTIVE";
+            }
+            else 
+            {
+                statusText.text = "MODE: STANDARD";
+            }
+        }
+        
+        if (connectionIndicator != null)
+        {
+            if(shadowModeActive) 
+            {
+                connectionIndicator.color = UIThemeHelper.Colors.AppleBlue; // Replaced magenta
+            }
+            else 
+            {
+                connectionIndicator.color = Color.green;
+            }
         }
     }
 
     // --- UI Button Functions (Called by OnClick events in Unity) ---
     public void RequestToggleShadow()
     {
-        // This sends a message BACK to ROS (Jetson)
-        ros.Publish<BoolMsg>("nav/cmd/toggle_shadow", new BoolMsg { data = true });
-        Debug.Log("[Unity] Sent request to toggle Shadow Mode");
+        if (ros == null)
+        {
+            Debug.LogWarning("[ROS2DashboardManager] ROS connection not initialized. Cannot toggle shadow mode.");
+            return;
+        }
+        
+        try
+        {
+            // This sends a message BACK to ROS (Jetson)
+            ros.Publish<BoolMsg>("nav/cmd/toggle_shadow", new BoolMsg { data = true });
+            Debug.Log("[Unity] Sent request to toggle Shadow Mode");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ROS2DashboardManager] Failed to publish toggle command: {e.Message}");
+        }
     }
 }

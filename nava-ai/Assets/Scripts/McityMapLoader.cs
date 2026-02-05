@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -132,26 +134,45 @@ public class McityMapLoader : MonoBehaviour
 
     List<MapBuildingData> LoadLocalMapData()
     {
-        string[] possiblePaths = {
+        List<string> possiblePaths = new List<string> {
             localMapFilePath,
-            Path.Combine(Application.dataPath, "..", localMapFilePath),
             Path.Combine(Application.persistentDataPath, localMapFilePath)
         };
         
+        // Safely try to construct path from Application.dataPath
+        try
+        {
+            string dataPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", localMapFilePath));
+            possiblePaths.Insert(1, dataPath);
+        }
+        catch
+        {
+            // If path construction fails, skip this option
+        }
+        
         foreach (string path in possiblePaths)
         {
-            if (File.Exists(path))
+            try
             {
-                try
+                if (File.Exists(path))
                 {
-                    string json = File.ReadAllText(path);
-                    MapDataContainer container = JsonUtility.FromJson<MapDataContainer>(json);
-                    return container.buildings;
+                    try
+                    {
+                        string json = File.ReadAllText(path);
+                        MapDataContainer container = JsonUtility.FromJson<MapDataContainer>(json);
+                        return container.buildings;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"[McityMapLoader] Failed to load local file: {e.Message}");
+                        continue;
+                    }
                 }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning($"[McityMapLoader] Failed to load local file: {e.Message}");
-                }
+            }
+            catch
+            {
+                // Skip invalid paths
+                continue;
             }
         }
         

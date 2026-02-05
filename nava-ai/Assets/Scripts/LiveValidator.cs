@@ -94,16 +94,37 @@ public class LiveValidator : MonoBehaviour
     {
         string[] possiblePaths = {
             dvrLogPath,
-            Path.Combine(Application.dataPath, "..", "Data", dvrLogPath),
             Path.Combine(Application.persistentDataPath, "Data", dvrLogPath)
         };
         
+        // Try to construct path from Application.dataPath safely
+        try
+        {
+            string dataPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Data", dvrLogPath));
+            possiblePaths = new string[] { dvrLogPath, dataPath, Path.Combine(Application.persistentDataPath, "Data", dvrLogPath) };
+        }
+        catch
+        {
+            // If path construction fails, use persistent data path only
+        }
+        
         foreach (string path in possiblePaths)
         {
-            string directory = Path.GetDirectoryName(path);
-            if (string.IsNullOrEmpty(directory) || Directory.Exists(directory) || path == dvrLogPath)
+            try
             {
-                return path;
+                string directory = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    if (Directory.Exists(directory) || path == dvrLogPath)
+                    {
+                        return path;
+                    }
+                }
+            }
+            catch
+            {
+                // Skip invalid paths
+                continue;
             }
         }
         

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,20 +56,37 @@ public class TrajectoryReplayer : MonoBehaviour
         recordedTimestamps.Clear();
         
         // Try multiple possible file paths
-        string[] possiblePaths = {
+        List<string> possiblePaths = new List<string> {
             csvFilePath,
-            Path.Combine(Application.dataPath, "..", csvFilePath),
-            Path.Combine(Application.persistentDataPath, csvFilePath),
-            csvFilePath // Absolute path if provided
+            Path.Combine(Application.persistentDataPath, csvFilePath)
         };
+        
+        // Safely try to construct path from Application.dataPath
+        try
+        {
+            string dataPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", csvFilePath));
+            possiblePaths.Insert(1, dataPath);
+        }
+        catch
+        {
+            // If path construction fails, skip this option
+        }
         
         string filePath = null;
         foreach (string path in possiblePaths)
         {
-            if (File.Exists(path))
+            try
             {
-                filePath = path;
-                break;
+                if (File.Exists(path))
+                {
+                    filePath = path;
+                    break;
+                }
+            }
+            catch
+            {
+                // Skip invalid paths
+                continue;
             }
         }
         

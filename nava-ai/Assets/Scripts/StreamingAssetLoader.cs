@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
 using System.IO;
@@ -45,11 +46,19 @@ public class StreamingAssetLoader : MonoBehaviour
         }
 
         // Create assets directory if it doesn't exist
-        string fullPath = Path.Combine(Application.dataPath, "..", assetsPath);
-        if (!Directory.Exists(fullPath))
+        try
         {
-            Directory.CreateDirectory(fullPath);
-            Debug.Log($"[StreamingAssetLoader] Created directory: {fullPath}");
+            string fullPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", assetsPath));
+            string directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                Debug.Log($"[StreamingAssetLoader] Created directory: {directory}");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[StreamingAssetLoader] Failed to create directory: {e.Message}. Using persistent data path.");
         }
     }
 
@@ -74,7 +83,16 @@ public class StreamingAssetLoader : MonoBehaviour
     {
         isDownloading = true;
         string url = $"{serverUrl}/Assets/{fileName}";
-        string localPath = Path.Combine(Application.dataPath, "..", assetsPath, fileName);
+        string localPath;
+        try
+        {
+            localPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", assetsPath, fileName));
+        }
+        catch
+        {
+            // Fallback to persistent data path if path construction fails
+            localPath = Path.Combine(Application.persistentDataPath, assetsPath, fileName);
+        }
         currentDownloadPath = localPath;
 
         Debug.Log($"[StreamingAssetLoader] Starting download: {url}");
@@ -230,16 +248,39 @@ public class DownloadHandlerFile : DownloadHandlerScript
 
     public DownloadHandlerFile(string path) : base()
     {
-        filePath = path;
-        
-        // Create file stream for writing
-        string directory = Path.GetDirectoryName(path);
-        if (!Directory.Exists(directory))
+        try
         {
-            Directory.CreateDirectory(directory);
+            filePath = path;
+            
+            // Validate and create directory safely
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.LogError("[DownloadHandlerFile] Invalid path provided");
+                return;
+            }
+            
+            string directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[DownloadHandlerFile] Failed to create directory: {e.Message}");
+                    return;
+                }
+            }
+            
+            // Create file stream for writing
+            fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
         }
-        
-        fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[DownloadHandlerFile] Failed to initialize file stream: {e.Message}");
+            fileStream = null;
+        }
     }
 
     protected override void ReceiveContentLengthHeader(ulong contentLength)

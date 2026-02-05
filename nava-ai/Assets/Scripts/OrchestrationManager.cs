@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ public class OrchestrationManager : MonoBehaviour
     public bool autoReset = true;
     public TextMeshProUGUI curriculumStatusText;
     
-    [Header("Stage Definitions")]
+    // Stage Definitions
     [System.Serializable]
     public class CurriculumTask
     {

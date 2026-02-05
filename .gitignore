@@ -87,3 +87,6 @@ Assets/Data/*.json
 
 # Logs
 *.log
+nava-ai/Library_backup*
+nava-ai/Temp/
+nava-ai/Library/
